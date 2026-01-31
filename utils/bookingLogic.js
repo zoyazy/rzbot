@@ -10,13 +10,13 @@ import {
 } from "../config.js";
 
 // First, we'll see if we already have a reservation
-async function checkForExistingBooking() {
+async function checkForExistingBooking(venue_id) {
   let config = existingReservationConfig(process.env.AUTH_TOKEN);
-  let venueId = process.env.VENUE_ID;
+  let venueId = venue_id;
   try {
     const response = await axios.request(config);
     if (response.data.reservations[0]?.venue?.id == venueId) {
-      console.log(`You already have a reservation for tonight!`);
+      log(`You already have a reservation for tonight!`);
       return true;
     } else {
       return false;
@@ -27,8 +27,8 @@ async function checkForExistingBooking() {
 }
 
 // Then, we'll check to see if there are any reservations available
-async function fetchDataAndParseSlots(date) {
-  const config = slotConfig(date);
+async function fetchDataAndParseSlots(date, venueConfig) {
+  const config = slotConfig(date, venueConfig.VENUE_ID);
   try {
     const response = await axios.request(config);
     if (response.data.results.venues.length === 0) {
@@ -38,14 +38,12 @@ async function fetchDataAndParseSlots(date) {
       return false;
     }
     console.log(
-      `Checking for reservations at ${
-        response.data.results.venues[0].venue.name
-      } on ${convertDateToLongFormat(date)} for ${
-        process.env.PARTY_SIZE
+      `Checking for reservations at ${response.data.results.venues[0].venue.name
+      } on ${convertDateToLongFormat(date)} for ${process.env.PARTY_SIZE
       } people...`
     );
     let slots = response.data.results.venues[0].slots;
-    const slotId = await slotParser(slots);
+    const slotId = await slotParser(slots, venueConfig);
     return slotId;
   } catch (error) {
     console.log(error);
@@ -87,54 +85,58 @@ async function makeBooking(book_token) {
   }
 }
 
-async function makeReservation() {
+async function makeReservation(venueConfig) {
   let killed = false;
-  const drop_time = new Date();
-  const [dropHour, dropMinute] = process.env.DROP_TIME.split(":").map(Number);
-  drop_time.setHours(dropHour, dropMinute, 55, 0);
+  const { dropDate, reservationDate } = getNextDropAndReservationDate(venueConfig);
+  let drop_time = dropDate.getTime();
+  let date = reservationDate.toISOString().slice(0, 10);
 
   process.on("message", (msg) => {
-    if (msg === "terminate") {
-      console.log(`Worker ${process.pid} terminating...`);
+    if (msg === "reservation_found") {
+      log(`terminating...`);
       killed = true;
     }
+    return;
   });
 
-  let date = process.env.DATE;
+  let now = (new Date()).getTime();
+
   while (!killed) {
-    log(`Worker ${process.pid} attempting...`);
-    let existingBooking = await checkForExistingBooking();
+    log(`attempting... ${venueConfig.NAME} on ${date}`);
+    let existingBooking = await checkForExistingBooking(venueConfig.VENUE_ID);
     if (existingBooking) {
       process.send("reservation_found");
       killed = true;
+      return;
     }
-    let slots = await fetchDataAndParseSlots(date);
+    let slots = await fetchDataAndParseSlots(date, venueConfig);
     if (slots) {
       let bookToken = await getBookingConfig(date, slots);
       let booking = await makeBooking(bookToken);
       if (booking?.resy_token) {
         process.send("reservation_found");
+        killed = true;
         log(`Worker ${process.pid} found the reservation!`);
+        return;
       } else {
         log(`Worker ${process.pid} Something went to 💩`);
       }
-    } else {
-      var delay = 0;
-      // Delay based on DROP_TIME
-      const now = new Date();
-      if (now > drop_time + 8000) {
-        process.send("reservation_found");
-        log(`No reservation found`);
-      } else if (now < drop_time - 10000) {
-        delay = 10000;
-      } else if (now < drop_time) {
-        delay = 5000;
-      } else {
-        delay = 200;
-      }
-      log(`Sleeping for ${delay}ms...`);
-      await new Promise((res) => setTimeout(res, delay));
     }
+
+    var delay = 0;
+    // Delay based on DROP_TIME
+    now = new Date();
+  if (now.getTime() > dropDate.getTime() + 4000) {
+      process.send("reservation_found");
+      log(`No reservation found`);
+      break;
+    } else if (now.getTime() < dropDate.getTime() - 1000) {
+      delay = (dropDate.getTime() - now.getTime()) / 2;
+    } else {
+      delay = 200;
+    }
+    log(`Sleeping for ${delay}ms...`);
+    await new Promise((res) => setTimeout(res, delay));
   }
 }
 
@@ -145,8 +147,32 @@ function log(message) {
     minute: "2-digit",
     second: "2-digit",
   });
-  console.log(`[${time}] ${message}`);
+  console.log(`[${time}] Worker ${process.pid} ${message}`);
 }
+
+/**
+ * Finds the next drop time and reservation date for a venue.
+ * @param {Object} venueConfig - The venue configuration object.
+ * @param {Date} [now=new Date()] - The current date/time (optional, defaults to now).
+ * @returns {{dropDate: Date, reservationDate: Date}}
+ */
+function getNextDropAndReservationDate(venueConfig, now = new Date()) {
+  // Parse drop time from venueConfig (e.g., "23:59")
+  const [dropHour, dropMinute] = venueConfig.DROP_TIME.split(":").map(Number);
+  let dropDate = new Date(now);
+  dropDate.setHours(dropHour, dropMinute, 58, 0);
+
+  // If drop time is before current time, set dropDate to next day
+  if (dropDate <= now) {
+    dropDate.setDate(dropDate.getDate() + 1);
+  }
+
+  // Reservation date is DAYS_OUT from today
+  let reservationDate = new Date(dropDate);
+  reservationDate.setDate(reservationDate.getDate() + venueConfig.DAYS_OUT);
+
+  return { dropDate, reservationDate };
+ }
 
 export {
   checkForExistingBooking,

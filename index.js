@@ -1,3 +1,4 @@
+import fs from "fs";
 import {
   checkForExistingBooking,
   getBookingConfig,
@@ -17,10 +18,61 @@ if (!token) {
   process.exit(0);
 }
 
+const venues = [
+  // {
+  //   "NAME": "Beekman -- Test",
+  //   "VENUE_ID": "40703",
+  //   "EARLIEST": "19:00",
+  //   "LATEST": "23:30",
+  //   "DROP_TIME": "01:54",
+  //   "DAYS_OUT": 6
+  // },
+  // {
+  //   "NAME": "Double Chicken Please",
+  //   "VENUE_ID": "42534", 
+  //   "EARLIEST": "20:00",
+  //   "LATEST": "23:30",
+  //   "DROP_TIME": "23:59",
+  //   "DAYS_OUT": 6
+  // },
+  //   {
+  //   "NAME": "4 Horseman",
+  //   "VENUE_ID": "2492",
+  //   "EARLIEST": "18:00",
+  //   "LATEST": "21:00",
+  //   "DROP_TIME": "06:59",
+  //   "DAYS_OUT": 29
+  // },
+  {
+    "NAME": "4 Charles",
+    "VENUE_ID": "929",
+    "EARLIEST": "17:00",
+    "LATEST": "21:00",
+    "DROP_TIME": "08:59",
+    "DAYS_OUT": 20
+  },
+  // {
+  //   "NAME": "Torrisi",
+  //   "VENUE_ID": "64593",
+  //   "EARLIEST": "17:00",
+  //   "LATEST": "21:00",
+  //   "DROP_TIME": "09:59",
+  //   "DAYS_OUT": 30
+  // }
+  {
+    "NAME": "Misi",
+    "VENUE_ID": "3015",
+    "EARLIEST": "18:00",
+    "LATEST": "20:00",
+    "DROP_TIME": "09:59",
+    "DAYS_OUT": 27
+  }
+];
 const numCPUs = os.cpus().length;
 
-if (cluster.isMaster) {
-  console.log(`Master ${process.pid} is running`);
+
+if (cluster.isPrimary) {
+  console.log(`Primary ${process.pid} is running`);
 
   const workers = [];
 
@@ -48,6 +100,7 @@ if (cluster.isMaster) {
   });
 } else {
   console.log(`Worker ${process.pid} started`);
-
-  await makeReservation();
+  for (const venue of venues) {
+    await makeReservation(venue);
+  }
 }

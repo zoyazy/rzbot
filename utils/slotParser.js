@@ -1,13 +1,13 @@
 import { convertTimeToTwelveHourFormat, isTimeBetween } from "./helpers.js";
 
-async function slotParser(slots) {
+async function slotParser(slots, venueConfig) {
   const numberOfSlots = slots.length;
   console.log(`There are ${numberOfSlots} slots available: `);
   let slotId = null;
   for (const slot of shuffle(slots)) {
     let time = convertTimeToTwelveHourFormat(slot.date.start);
     const reservationType = slot.config.type;
-    let isPrime = await slotChooser(slot, time, reservationType);
+    let isPrime = await slotChooser(slot, venueConfig);
     if (isPrime) {
       slotId = isPrime;
       break;
@@ -32,9 +32,9 @@ function shuffle(array) {
   return result;
 }
 
-async function slotChooser(slot, time, type) {
+async function slotChooser(slot, venueConfig) {
   if (
-    isTimeBetween(process.env.EARLIEST, process.env.LATEST, slot.date.start)
+    isTimeBetween(venueConfig.EARLIEST, venueConfig.LATEST, slot.date.start)
   ) {
     return slot.config.token;
   }

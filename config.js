@@ -29,11 +29,11 @@ function existingReservationConfig(authToken) {
   return configObject;
 }
 
-function slotConfig(date) {
+function slotConfig(date, venue_id) {
   let config = {
     method: "get",
     maxBodyLength: Infinity,
-    url: `https://api.resy.com/4/find?lat=0&long=0&day=${date}&party_size=${process.env.PARTY_SIZE}&venue_id=${process.env.VENUE_ID}`,
+    url: `https://api.resy.com/4/find?lat=0&long=0&day=${date}&party_size=${process.env.PARTY_SIZE}&venue_id=${venue_id}`,
     headers: {
       authority: "api.resy.com",
       accept: "application/json, text/plain, */*",
