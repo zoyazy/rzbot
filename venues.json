@@ -1,26 +1,18 @@
 [
-      {
+  {
     "NAME": "Beekman -- Test",
-    "VENUE_ID": "40703", 
+    "VENUE_ID": "40703",
     "EARLIEST": "20:00",
     "LATEST": "23:30",
     "DROP_TIME": "23:43",
     "DAYS_OUT": 6
   },
   {
-    "NAME": "Double Chicken Please",
-    "VENUE_ID": "42534", 
-    "EARLIEST": "20:00",
-    "LATEST": "23:30",
-    "DROP_TIME": "23:59",
-    "DAYS_OUT": 6
-  },
-    {
-    "NAME": "Torrisi",
-    "VENUE_ID": "64593",
+    "NAME": "Ha",
+    "VENUE_ID": "85885",
     "EARLIEST": "17:00",
-    "LATEST": "21:00",
-    "DROP_TIME": "09:59",
-    "DAYS_OUT": 30
+    "LATEST": "20:00",
+    "DROP_TIME": "11:59",
+    "DAYS_OUT": 20
   }
 ]

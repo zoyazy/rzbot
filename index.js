@@ -22,11 +22,19 @@ const venues = [
   // {
   //   "NAME": "Beekman -- Test",
   //   "VENUE_ID": "40703",
-  //   "EARLIEST": "19:00",
-  //   "LATEST": "23:30",
+  //   "EARLIEST": "10:00",
+  //   "LATEST": "19:30",
   //   "DROP_TIME": "01:54",
   //   "DAYS_OUT": 6
   // },
+  {
+    "NAME": "Ha",
+    "VENUE_ID": "85855",
+    "EARLIEST": "17:00",
+    "LATEST": "20:00",
+    "DROP_TIME": "11:59",
+    "DAYS_OUT": 20
+  },
   // {
   //   "NAME": "Double Chicken Please",
   //   "VENUE_ID": "42534", 
@@ -43,14 +51,14 @@ const venues = [
   //   "DROP_TIME": "06:59",
   //   "DAYS_OUT": 29
   // },
-  {
-    "NAME": "4 Charles",
-    "VENUE_ID": "929",
-    "EARLIEST": "17:00",
-    "LATEST": "21:00",
-    "DROP_TIME": "08:59",
-    "DAYS_OUT": 20
-  },
+  // {
+  //   "NAME": "4 Charles",
+  //   "VENUE_ID": "929",
+  //   "EARLIEST": "17:00",
+  //   "LATEST": "21:00",
+  //   "DROP_TIME": "08:59",
+  //   "DAYS_OUT": 20
+  // },
   // {
   //   "NAME": "Torrisi",
   //   "VENUE_ID": "64593",
@@ -59,14 +67,14 @@ const venues = [
   //   "DROP_TIME": "09:59",
   //   "DAYS_OUT": 30
   // }
-  {
-    "NAME": "Misi",
-    "VENUE_ID": "3015",
-    "EARLIEST": "18:00",
-    "LATEST": "20:00",
-    "DROP_TIME": "09:59",
-    "DAYS_OUT": 27
-  }
+  // {
+  //   "NAME": "Misi",
+  //   "VENUE_ID": "3015",
+  //   "EARLIEST": "18:00",
+  //   "LATEST": "20:00",
+  //   "DROP_TIME": "09:59",
+  //   "DAYS_OUT": 27
+  // }
 ];
 const numCPUs = os.cpus().length;
 
